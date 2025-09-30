@@ -1,0 +1,20 @@
+[project]
+name = "mini-yt-mcp"
+version = "0.1.0"
+description = "Minimal YouTube MCP - Download YouTube videos and generate dance moves from audio analysis"
+dependencies = [
+    "yt-dlp>=2023.12.30",
+    "opencv-python>=4.8.1",
+    "numpy>=1.26.0",
+    "Pillow>=10.1.0",
+    "mediapipe>=0.10.0",
+    "pandas>=2.0.0",
+    "matplotlib>=3.7.0",
+    "scipy>=1.11.0",
+    "librosa>=0.10.0",
+]
+requires-python = ">=3.9"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
