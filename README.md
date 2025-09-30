@@ -96,10 +96,11 @@ Complete analysis including:
 
 ## Requirements
 
-- Python 3.9+
+- Python 3.10+ (required for MCP server)
 - yt-dlp (YouTube downloading)
 - librosa (audio analysis)
 - numpy, scipy, pandas (numerical processing)
+- mcp (Model Context Protocol support)
 - reachy_mini (optional - for robot integration)
 
 ## Energy-Based Movement Patterns
@@ -117,3 +118,70 @@ Each dance move includes sequence information for better understanding:
 - Pattern variation (A-K sequences per energy level)
 - Position within 8-beat cycle
 - Repetition count for tracking progression
+
+## MCP Server
+
+Mini YT MCP includes a **Model Context Protocol (MCP) server** that exposes YouTube download and dance generation functionality to compatible clients.
+
+### Starting the MCP Server
+
+```bash
+# Start the MCP server
+mini-yt-mcp-server
+
+# Or run directly
+python -m mini_yt_mcp.server
+```
+
+### Available MCP Tools
+
+The server provides these tools for use with MCP-compatible clients:
+
+1. **search_youtube** - Search for YouTube videos by query terms
+2. **get_video_info** - Get detailed information about a YouTube video
+3. **download_audio** - Download audio from a YouTube video
+4. **analyze_audio** - Analyze audio file and generate dance sequence
+5. **generate_dance_from_youtube** - Complete workflow: download + analyze
+6. **load_dance_from_csv** - Load and analyze dance moves from CSV file
+
+### MCP Integration Example
+
+The server works with any MCP-compatible client. Here's what the tools provide:
+
+**Search and Download:**
+```json
+{
+  "tool": "search_youtube",
+  "arguments": {"query": "upbeat dance music 2024"}
+}
+```
+
+**Complete Workflow:**
+```json
+{
+  "tool": "generate_dance_from_youtube",
+  "arguments": {
+    "input": "https://youtube.com/watch?v=...",
+    "export_csv": true
+  }
+}
+```
+
+**CSV Analysis:**
+```json
+{
+  "tool": "load_dance_from_csv",
+  "arguments": {
+    "csv_path": "/path/to/dance_moves.csv",
+    "scale": 0.5
+  }
+}
+```
+
+### MCP Server Features
+
+- **Async Operation**: Non-blocking audio processing
+- **Error Handling**: Comprehensive error reporting
+- **File Management**: Automatic temporary file handling
+- **Rich Responses**: Detailed JSON results with metadata
+- **Tool Validation**: Input schema validation for all tools
