@@ -173,7 +173,6 @@ output/
 # Temporary files
 *.tmp
 *.temp
-test_*.py
 temp_*.py
 
 # OS specific

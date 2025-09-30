@@ -14,6 +14,30 @@ dependencies = [
     "librosa>=0.10.0",
 ]
 requires-python = ">=3.9"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Mini YT MCP Team"},
+]
+keywords = ["youtube", "audio", "dance", "robot", "mcp"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.scripts]
+mini-yt-mcp = "mini_yt_mcp.main:main"
+
+[project.urls]
+Homepage = "https://github.com/haixuanTao/mini-yt-mcp"
+Repository = "https://github.com/haixuanTao/mini-yt-mcp.git"
+Issues = "https://github.com/haixuanTao/mini-yt-mcp/issues"
 
 [build-system]
 requires = ["hatchling"]

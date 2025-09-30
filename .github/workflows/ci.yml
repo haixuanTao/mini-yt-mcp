@@ -1,0 +1,256 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-installation:
+    name: Test Installation Methods
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        exclude:
+          # Reduce matrix size by excluding some combinations
+          - os: windows-latest
+            python-version: "3.9"
+          - os: windows-latest
+            python-version: "3.10"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+        enable-cache: true
+
+    - name: Test uv sync installation
+      run: |
+        uv sync
+        echo "✅ uv sync completed successfully"
+
+    - name: Test module imports
+      run: |
+        uv run python -c "
+        try:
+            from mini_yt_mcp import audio_analyzer, csv_move, downloader
+            print('✅ All core modules import successfully')
+        except ImportError as e:
+            print(f'❌ Import failed: {e}')
+            exit(1)
+        "
+
+    - name: Test help command
+      run: |
+        uv run python -m mini_yt_mcp.main --help
+
+    - name: Test basic functionality (no download)
+      run: |
+        uv run python -c "
+        from mini_yt_mcp.audio_analyzer import AudioAnalyzer
+        from mini_yt_mcp.downloader import YouTubeDownloader
+        from mini_yt_mcp.csv_move import CSVMove
+        import tempfile
+        import os
+
+        # Test AudioAnalyzer initialization
+        with tempfile.TemporaryDirectory() as temp_dir:
+            analyzer = AudioAnalyzer(temp_dir)
+            print('✅ AudioAnalyzer initializes correctly')
+
+            # Test YouTubeDownloader initialization
+            downloader = YouTubeDownloader(temp_dir)
+            print('✅ YouTubeDownloader initializes correctly')
+
+            print('✅ Basic functionality test passed')
+        "
+
+  test-uvx-installation:
+    name: Test uvx Installation
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        # Test uvx on fewer platforms as it's more resource intensive
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+        enable-cache: true
+
+    - name: Test uvx installation from local directory
+      run: |
+        # Test uvx installation from current directory
+        uvx --from . mini-yt-mcp --help
+
+    - name: Test uvx module execution
+      run: |
+        # Test that uvx can run the module
+        uvx --from . python -m mini_yt_mcp.main --help
+
+  lint-and-format:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+        enable-cache: true
+
+    - name: Install dependencies
+      run: uv sync
+
+    - name: Check Python syntax
+      run: |
+        uv run python -m py_compile mini_yt_mcp/*.py
+        uv run python -m py_compile *.py
+        echo "✅ All Python files compile successfully"
+
+    - name: Check for common issues
+      run: |
+        # Check for TODO/FIXME comments that might indicate incomplete work
+        echo "Checking for TODO/FIXME comments..."
+        if grep -r "TODO\|FIXME" mini_yt_mcp/ *.py 2>/dev/null; then
+          echo "⚠️  Found TODO/FIXME comments (not failing, just noting)"
+        else
+          echo "✅ No TODO/FIXME comments found"
+        fi
+
+        # Check for print statements that might be debug code
+        echo "Checking for potential debug print statements..."
+        if grep -r "print(" mini_yt_mcp/ --include="*.py" | grep -v "print(f" | grep -v "print(\"" | head -5; then
+          echo "⚠️  Found potential debug print statements (review recommended)"
+        else
+          echo "✅ No obvious debug print statements found"
+        fi
+
+  test-example-scripts:
+    name: Test Example Scripts
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+        enable-cache: true
+
+    - name: Install dependencies
+      run: uv sync
+
+    - name: Test example_usage.py imports
+      run: |
+        uv run python -c "
+        import sys
+        sys.path.insert(0, '.')
+        try:
+            import example_usage
+            print('✅ example_usage.py imports successfully')
+        except Exception as e:
+            print(f'❌ example_usage.py import failed: {e}')
+            exit(1)
+        "
+
+    - name: Test dance_example.py imports
+      run: |
+        uv run python -c "
+        import sys
+        sys.path.insert(0, '.')
+        try:
+            import dance_example
+            print('✅ dance_example.py imports successfully')
+        except Exception as e:
+            print(f'❌ dance_example.py import failed: {e}')
+            exit(1)
+        "
+
+  check-project-structure:
+    name: Check Project Structure
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Verify project structure
+      run: |
+        echo "Checking project structure..."
+
+        # Check required files exist
+        for file in "pyproject.toml" "README.md" ".gitignore" "mini_yt_mcp/__init__.py"; do
+          if [ -f "$file" ]; then
+            echo "✅ $file exists"
+          else
+            echo "❌ $file missing"
+            exit 1
+          fi
+        done
+
+        # Check core modules exist
+        for module in "main.py" "audio_analyzer.py" "csv_move.py" "downloader.py"; do
+          if [ -f "mini_yt_mcp/$module" ]; then
+            echo "✅ mini_yt_mcp/$module exists"
+          else
+            echo "❌ mini_yt_mcp/$module missing"
+            exit 1
+          fi
+        done
+
+        echo "✅ Project structure is correct"
+
+    - name: Check pyproject.toml configuration
+      run: |
+        echo "Checking pyproject.toml..."
+        if grep -q "mini-yt-mcp" pyproject.toml; then
+          echo "✅ Project name is correct in pyproject.toml"
+        else
+          echo "❌ Project name missing or incorrect in pyproject.toml"
+          exit 1
+        fi
+
+        if grep -q "requires-python" pyproject.toml; then
+          echo "✅ Python version requirement specified"
+        else
+          echo "❌ Python version requirement missing"
+          exit 1
+        fi
