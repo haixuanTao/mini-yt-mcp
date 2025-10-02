@@ -24,10 +24,12 @@ def search_youtube_video(search_query: str) -> str:
     Raises:
         Exception: If search fails or no results found
     """
-    print(f"Searching YouTube for: '{search_query}'")
+    # Removed print for quieter operation when called from MCP
+    # print(f"Searching YouTube for: '{search_query}'", file=sys.stderr)
 
     ydl_opts = {
         'quiet': True,
+        'no_warnings': True,
         'extract_flat': True,
     }
 
@@ -47,8 +49,9 @@ def search_youtube_video(search_query: str) -> str:
 
                 video_title = first_result.get('title', 'Unknown Title')
 
-                print(f"Found: '{video_title}'")
-                print(f"URL: {video_url}")
+                # Removed prints for quieter operation when called from MCP
+                # print(f"Found: '{video_title}'", file=sys.stderr)
+                # print(f"URL: {video_url}", file=sys.stderr)
                 return video_url
             else:
                 raise Exception("No search results found")

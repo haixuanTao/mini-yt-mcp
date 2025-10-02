@@ -140,18 +140,18 @@ class AudioPlayer:
             duration: Duration to play in seconds (None for full)
         """
         if not self.audio_path:
-            print("No audio file specified")
+            # Silenced for MCP usage: print("No audio file specified")
             return
 
         if not Path(self.audio_path).exists():
-            print(f"Audio file not found: {self.audio_path}")
+            # Silenced for MCP usage: print(f"Audio file not found: {self.audio_path}")
             return
 
-        print(f"Starting audio playback: {Path(self.audio_path).name}")
-        if start_time > 0:
-            print(f"  Starting at {start_time:.1f}s")
-        if duration:
-            print(f"  Duration: {duration:.1f}s")
+        # Silenced for MCP usage: print(f"Starting audio playback: {Path(self.audio_path).name}")
+        # if start_time > 0:
+        #     print(f"  Starting at {start_time:.1f}s")
+        # if duration:
+        #     print(f"  Duration: {duration:.1f}s")
 
         self.stop_audio.clear()
 
@@ -173,15 +173,16 @@ class AudioPlayer:
     def stop_playback(self):
         """Stop audio playback."""
         if self.audio_thread and self.audio_thread.is_alive():
-            print("Stopping audio playback...")
+            # Silenced for MCP usage: print("Stopping audio playback...")
             self.stop_audio.set()
             self.audio_thread.join(timeout=1)
 
 
 class CSVMove:
-    def __init__(self, csv_path: str, scale: float = 0.3, audio_sync: bool = True):
+    def __init__(self, csv_path: str, scale: float = 0.3, audio_sync: bool = True, stop_event=None):
         df = pd.read_csv(csv_path)
         self.csv_path = csv_path
+        self.stop_event = stop_event  # Event to signal playback should stop
 
         # Set up audio player if requested
         self.audio_player = None
@@ -190,9 +191,9 @@ class CSVMove:
             audio_path = self.audio_player.find_matching_audio(csv_path)
             if audio_path:
                 self.audio_player.audio_path = audio_path
-                print(f"Found matching audio: {Path(audio_path).name}")
+                # Silenced for MCP usage: print(f"Found matching audio: {Path(audio_path).name}")
             else:
-                print("No matching audio file found in downloads folder")
+                # Silenced for MCP usage: print("No matching audio file found in downloads folder")
                 self.audio_player = None
 
         # Handle new CSV format with timestamp in seconds
@@ -212,28 +213,28 @@ class CSVMove:
             col in df.columns
             for col in ["x_cm", "y_cm", "z_cm", "roll_deg", "pitch_deg", "yaw_deg"]
         ):
-            print("Using new XYZ RPY format")
+            # Silenced for MCP usage: print("Using new XYZ RPY format")
 
-            # Print sequence information if available
-            if "sequence_type" in df.columns and "sequence_variation" in df.columns:
-                unique_sequences = df[["sequence_type", "sequence_variation", "sequence_position", "sequence_repetition"]].drop_duplicates()
-                print(f"\n=== Dance Sequence Information ===")
-                for _, seq in unique_sequences.iterrows():
-                    seq_type = seq.get("sequence_type", "unknown")
-                    seq_var = seq.get("sequence_variation", "unknown")
-                    seq_pos = seq.get("sequence_position", "unknown")
-                    seq_rep = seq.get("sequence_repetition", "unknown")
-                    print(f"Sequence: {seq_type} variation {seq_var}, position {seq_pos}, repetition {seq_rep}")
-
-                # Print summary of movement names if available
-                if "head_movement_name" in df.columns:
-                    unique_moves = df["head_movement_name"].unique()
-                    print(f"\nMovement patterns detected: {len(unique_moves)} unique movements")
-                    for move in unique_moves[:5]:  # Show first 5 movements
-                        print(f"  - {move}")
-                    if len(unique_moves) > 5:
-                        print(f"  ... and {len(unique_moves) - 5} more")
-                print(f"=== End Sequence Information ===\n")
+            # Silenced sequence information for MCP usage
+            # if "sequence_type" in df.columns and "sequence_variation" in df.columns:
+            #     unique_sequences = df[["sequence_type", "sequence_variation", "sequence_position", "sequence_repetition"]].drop_duplicates()
+            #     print(f"\n=== Dance Sequence Information ===")
+            #     for _, seq in unique_sequences.iterrows():
+            #         seq_type = seq.get("sequence_type", "unknown")
+            #         seq_var = seq.get("sequence_variation", "unknown")
+            #         seq_pos = seq.get("sequence_position", "unknown")
+            #         seq_rep = seq.get("sequence_repetition", "unknown")
+            #         print(f"Sequence: {seq_type} variation {seq_var}, position {seq_pos}, repetition {seq_rep}")
+            #
+            #     # Print summary of movement names if available
+            #     if "head_movement_name" in df.columns:
+            #         unique_moves = df["head_movement_name"].unique()
+            #         print(f"\nMovement patterns detected: {len(unique_moves)} unique movements")
+            #         for move in unique_moves[:5]:  # Show first 5 movements
+            #             print(f"  - {move}")
+            #         if len(unique_moves) > 5:
+            #             print(f"  ... and {len(unique_moves) - 5} more")
+            #     print(f"=== End Sequence Information ===\n")
 
             # Extract coordinates directly (already in cm and degrees)
             x_cm = df["x_cm"].values * scale * 0.01  # Convert cm to meters for robot
@@ -248,7 +249,7 @@ class CSVMove:
             if "body_yaw_deg" in df.columns:
                 body_yaw_rad = np.deg2rad(df["body_yaw_deg"].values) * scale * 3
                 self.has_body_yaw = True
-                print("Found body_yaw_deg column - using separate body rotation")
+                # Silenced for MCP usage: print("Found body_yaw_deg column - using separate body rotation")
             else:
                 body_yaw_rad = yaw_rad * 0.5  # Fallback to old calculation
                 self.has_body_yaw = False
@@ -307,7 +308,7 @@ class CSVMove:
             self.new_format = True
 
         else:
-            print("Using legacy format")
+            pass  # Silenced for MCP usage: print("Using legacy format")
             # Legacy format handling
             # Use smoothed data if available, else original
             pitch_col = next(
@@ -383,6 +384,10 @@ class CSVMove:
         return self._duration
 
     def evaluate(self, t):
+        # Check if we should stop playback
+        if self.stop_event and self.stop_event.is_set():
+            raise StopIteration("Playback stopped by user")
+
         t = np.clip(t, 0, self.duration)
 
         if self.new_format:

@@ -2,6 +2,7 @@
 
 import os
 import re
+import sys
 import yt_dlp
 from pathlib import Path
 from typing import Optional, Dict, Any
@@ -36,11 +37,17 @@ class YouTubeDownloader:
             'format': 'bestaudio/best',  # Download best audio only
             'outtmpl': output_template,
             'extract_flat': False,
+            'quiet': True,
+            'no_warnings': True,
+            'noprogress': True,
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'wav',
                 'preferredquality': '320',
             }],
+            'postprocessor_args': [
+                '-loglevel', 'error',  # Suppress ffmpeg output
+            ],
         }
 
         try:
@@ -93,7 +100,7 @@ class YouTubeDownloader:
                         return str(audio_files[0])
 
         except Exception as e:
-            print(f"Error downloading audio: {e}")
+            print(f"Error downloading audio: {e}", file=sys.stderr)
             return None
 
         return None
@@ -162,6 +169,8 @@ class YouTubeDownloader:
         """
         ydl_opts = {
             'extract_flat': False,
+            'quiet': True,
+            'no_warnings': True,
         }
 
         try:
@@ -175,5 +184,5 @@ class YouTubeDownloader:
                     'description': info.get('description'),
                 }
         except Exception as e:
-            print(f"Error getting video info: {e}")
+            print(f"Error getting video info: {e}", file=sys.stderr)
             return None
