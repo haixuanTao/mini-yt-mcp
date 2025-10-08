@@ -14,8 +14,44 @@
 
 ## Installation
 
+### Prerequisites
+
+The reachy_mini dependency may require Git LFS (Large File Storage) depending on the branch used. To ensure compatibility:
+
+**Install Git LFS:**
+
+macOS:
 ```bash
+brew install git-lfs
+git lfs install
+```
+
+Ubuntu/Debian:
+```bash
+sudo apt-get install git-lfs
+git lfs install
+```
+
+Windows:
+```bash
+# Download from https://git-lfs.com/
+git lfs install
+```
+
+**Note:** The project currently uses the `remove-git-lfs` branch of reachy_mini, which may not require Git LFS. However, installing Git LFS is recommended for compatibility with other branches.
+
+### Install the package
+
+```bash
+# Clone and install
+git clone https://github.com/haixuanTao/mini-yt-mcp.git
+cd mini-yt-mcp
 uv sync
+```
+
+Or install directly with uvx (requires UV_GIT_LFS=1):
+```bash
+UV_GIT_LFS=1 uvx --from git+https://github.com/haixuanTao/mini-yt-mcp mini-yt-mcp-server
 ```
 
 ## Usage
@@ -165,11 +201,16 @@ To use this MCP server with Claude Desktop, add the following to your Claude Des
         "--from",
         "git+https://github.com/haixuanTao/mini-yt-mcp",
         "mini-yt-mcp-server"
-      ]
+      ],
+      "env": {
+        "UV_GIT_LFS": "1"
+      }
     }
   }
 }
 ```
+
+**Note:** The `UV_GIT_LFS=1` environment variable enables Git LFS support in uv, which is required for downloading the reachy_mini dependency.
 
 After updating the config, restart Claude Desktop. You can then use commands like:
 - "Play some upbeat dance music"
