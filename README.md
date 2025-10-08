@@ -44,15 +44,18 @@ git lfs install
 ```bash
 git clone https://github.com/haixuanTao/mini-yt-mcp.git
 cd mini-yt-mcp
-GIT_LFS_SKIP_SMUDGE=1 uv sync
+UV_GIT_LFS=1 uv sync
 ```
 
 **Option 2: Install directly with uvx**
 ```bash
-GIT_LFS_SKIP_SMUDGE=1 UV_GIT_LFS=1 uvx --from git+https://github.com/haixuanTao/mini-yt-mcp mini-yt-mcp-server
+UV_GIT_LFS=1 uvx --from git+https://github.com/haixuanTao/mini-yt-mcp mini-yt-mcp-server
 ```
 
-**Note:** `GIT_LFS_SKIP_SMUDGE=1` is used to skip downloading Git LFS assets during installation. This is a workaround for uv's limited Git LFS support. The MCP server will function without these assets, but some robot-specific model files may be unavailable.
+**Important:** `UV_GIT_LFS=1` enables Git LFS support in uv. This requires:
+- Git LFS installed on your system (`brew install git-lfs`)
+- uv version 0.9.0 or newer
+- HTTPS URLs (SSH URLs don't work with UV_GIT_LFS)
 
 ## Usage
 
@@ -203,7 +206,6 @@ To use this MCP server with Claude Desktop, add the following to your Claude Des
         "mini-yt-mcp-server"
       ],
       "env": {
-        "GIT_LFS_SKIP_SMUDGE": "1",
         "UV_GIT_LFS": "1"
       }
     }
@@ -211,9 +213,7 @@ To use this MCP server with Claude Desktop, add the following to your Claude Des
 }
 ```
 
-**Note:**
-- `GIT_LFS_SKIP_SMUDGE=1` skips downloading Git LFS assets (workaround for uv limitations)
-- `UV_GIT_LFS=1` enables Git LFS support in uv
+**Note:** `UV_GIT_LFS=1` enables Git LFS support in uv. This requires uv 0.9.0+ and only works with HTTPS git URLs (not SSH).
 
 After updating the config, restart Claude Desktop. You can then use commands like:
 - "Play some upbeat dance music"
