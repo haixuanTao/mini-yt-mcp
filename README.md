@@ -140,6 +140,15 @@ The server provides these tools for use with MCP-compatible clients:
 1. **play_music** - Search for music on YouTube and play it (downloads, analyzes, and plays on robot if available)
 2. **stop_music** - Stop the currently playing music
 
+### Installing Claude Desktop
+
+To use this MCP server, you'll need an MCP-compatible client. Claude Desktop is the official client:
+
+**Download Claude Desktop:**
+- Visit [claude.ai/download](https://claude.ai/download)
+- Available for macOS, Windows, and Linux
+- Requires a Claude account (free tier available)
+
 ### Claude Desktop Configuration
 
 To use this MCP server with Claude Desktop, add the following to your Claude Desktop config file:
@@ -166,6 +175,23 @@ After updating the config, restart Claude Desktop. You can then use commands lik
 - "Play some upbeat dance music"
 - "Play https://youtube.com/watch?v=VIDEO_ID"
 - "Stop the music"
+
+### Alternative: Moly (Open Source)
+
+[Moly](https://github.com/moxin-org/moly) is an open source AI desktop client built in Rust. While MCP support is not currently documented, you can check their repository for updates on MCP integration:
+
+**Installation:**
+```bash
+# Download from releases
+# Visit: https://github.com/moxin-org/moly/releases
+
+# Or build from source
+git clone https://github.com/moxin-org/moly.git
+cd moly
+cargo run --release
+```
+
+**Note:** MCP server configuration for Moly may differ from Claude Desktop. Please refer to [Moly's documentation](https://github.com/moxin-org/moly) for the latest information on MCP support and configuration.
 
 ### MCP Integration Example
 
