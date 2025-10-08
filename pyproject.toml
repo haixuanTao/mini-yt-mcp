@@ -13,7 +13,7 @@ dependencies = [
     "scipy>=1.11.0",
     "librosa>=0.10.0",
     "mcp>=1.0.0",
-    "reachy_mini @ git+ssh://git@github.com/pollen-robotics/reachy_mini.git@make-dance-cancellable",
+    "reachy_mini @ git+ssh://git@github.com/pollen-robotics/reachy_mini.git@remove-git-lfs",
 ]
 requires-python = ">=3.10"
 readme = "README.md"
