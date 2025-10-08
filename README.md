@@ -16,9 +16,9 @@
 
 ### Prerequisites
 
-The reachy_mini dependency may require Git LFS (Large File Storage) depending on the branch used. To ensure compatibility:
-
 **Install Git LFS:**
+
+The reachy_mini dependency contains Git LFS assets. Install Git LFS to ensure compatibility:
 
 macOS:
 ```bash
@@ -38,21 +38,21 @@ Windows:
 git lfs install
 ```
 
-**Note:** The project currently uses the `remove-git-lfs` branch of reachy_mini, which may not require Git LFS. However, installing Git LFS is recommended for compatibility with other branches.
-
 ### Install the package
 
+**Option 1: Clone and install locally**
 ```bash
-# Clone and install
 git clone https://github.com/haixuanTao/mini-yt-mcp.git
 cd mini-yt-mcp
-uv sync
+GIT_LFS_SKIP_SMUDGE=1 uv sync
 ```
 
-Or install directly with uvx (requires UV_GIT_LFS=1):
+**Option 2: Install directly with uvx**
 ```bash
-UV_GIT_LFS=1 uvx --from git+https://github.com/haixuanTao/mini-yt-mcp mini-yt-mcp-server
+GIT_LFS_SKIP_SMUDGE=1 UV_GIT_LFS=1 uvx --from git+https://github.com/haixuanTao/mini-yt-mcp mini-yt-mcp-server
 ```
+
+**Note:** `GIT_LFS_SKIP_SMUDGE=1` is used to skip downloading Git LFS assets during installation. This is a workaround for uv's limited Git LFS support. The MCP server will function without these assets, but some robot-specific model files may be unavailable.
 
 ## Usage
 
@@ -203,6 +203,7 @@ To use this MCP server with Claude Desktop, add the following to your Claude Des
         "mini-yt-mcp-server"
       ],
       "env": {
+        "GIT_LFS_SKIP_SMUDGE": "1",
         "UV_GIT_LFS": "1"
       }
     }
@@ -210,7 +211,9 @@ To use this MCP server with Claude Desktop, add the following to your Claude Des
 }
 ```
 
-**Note:** The `UV_GIT_LFS=1` environment variable enables Git LFS support in uv, which is required for downloading the reachy_mini dependency.
+**Note:**
+- `GIT_LFS_SKIP_SMUDGE=1` skips downloading Git LFS assets (workaround for uv limitations)
+- `UV_GIT_LFS=1` enables Git LFS support in uv
 
 After updating the config, restart Claude Desktop. You can then use commands like:
 - "Play some upbeat dance music"
