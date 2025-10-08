@@ -12,71 +12,40 @@
 - **CSV Export**: Export dance sequences with full movement data and sequence tracking
 - **Caching**: Intelligent caching for both downloads and dance analysis
 
-## Installation
-
-### Prerequisites
-
-**Install Git LFS:**
-
-The reachy_mini dependency contains Git LFS assets. Install Git LFS to ensure compatibility:
-
-macOS:
-```bash
-brew install git-lfs
-git lfs install
-```
-
-Ubuntu/Debian:
-```bash
-sudo apt-get install git-lfs
-git lfs install
-```
-
-Windows:
-```bash
-# Download from https://git-lfs.com/
-git lfs install
-```
-
-### Install the package
-
-**Option 1: Clone and install locally**
-```bash
-git clone https://github.com/haixuanTao/mini-yt-mcp.git
-cd mini-yt-mcp
-UV_GIT_LFS=1 uv sync
-```
-
-**Option 2: Install directly with uvx**
-```bash
-UV_GIT_LFS=1 uvx --from git+https://github.com/haixuanTao/mini-yt-mcp mini-yt-mcp-server
-```
-
-**Important:** `UV_GIT_LFS=1` enables Git LFS support in uv. This requires:
-- Git LFS installed on your system (`brew install git-lfs`)
-- uv version 0.9.0 or newer
-- HTTPS URLs (SSH URLs don't work with UV_GIT_LFS)
-
 ## Usage
+
+### Robot Setup (Optional)
+
+If you want to use the Reachy Mini robot features, start the robot daemon:
+
+```bash
+python -m reachy_mini.daemon.app.main
+```
+
+This daemon must be running before playing dance moves on the robot.
 
 ### Basic usage
 
 **From YouTube URL:**
+
 ```bash
 python -m mini_yt_mcp.main "https://www.youtube.com/watch?v=VIDEO_ID" --export-csv
 ```
 
 **From search terms:**
+
 ```bash
 python -m mini_yt_mcp.main "upbeat dance song" --export-csv
 ```
 
 **Play on robot from CSV:**
+
 ```bash
 python -m mini_yt_mcp.main "output/song_dance_moves.csv" --robot --robot-scale 0.5
 ```
 
 ### Advanced options
+
 ```bash
 python -m mini_yt_mcp.main "dance music 2024" \
     --export-csv \
@@ -104,6 +73,7 @@ python -m mini_yt_mcp.main "dance music 2024" \
 ## Output
 
 The tool creates:
+
 - Downloaded audio files in `downloads/`
 - Analysis results in `output/`:
   - `{song_name}_dance_analysis.json`: Complete dance sequence with audio features
@@ -112,7 +82,9 @@ The tool creates:
 ## Dance Data Format
 
 ### CSV Output
+
 Each row contains dance move data:
+
 - `frame_number`: Frame index in dance sequence
 - `timestamp`: Time in seconds
 - `move_type`: Type of movement (main_beat, half_beat)
@@ -127,7 +99,9 @@ Each row contains dance move data:
 - `body_yaw_deg`: Body rotation angle in degrees
 
 ### JSON Output
+
 Complete analysis including:
+
 - Audio features (tempo, beats, onsets, energy levels)
 - Musical structure detection
 - Complete dance sequence with interpolation
@@ -153,6 +127,7 @@ The system generates different movement patterns based on audio energy:
 ## Sequence Tracking
 
 Each dance move includes sequence information for better understanding:
+
 - Sequence type (energy category)
 - Pattern variation (A-K sequences per energy level)
 - Position within 8-beat cycle
@@ -184,6 +159,7 @@ The server provides these tools for use with MCP-compatible clients:
 To use this MCP server, you'll need an MCP-compatible client. Claude Desktop is the official client:
 
 **Download Claude Desktop:**
+
 - Visit [claude.ai/download](https://claude.ai/download)
 - Available for macOS, Windows, and Linux
 - Requires a Claude account (free tier available)
@@ -195,6 +171,7 @@ To use this MCP server with Claude Desktop, add the following to your Claude Des
 **Location:** `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 
 **Configuration:**
+
 ```json
 {
   "mcpServers": {
@@ -216,6 +193,7 @@ To use this MCP server with Claude Desktop, add the following to your Claude Des
 **Note:** `UV_GIT_LFS=1` enables Git LFS support in uv. This requires uv 0.9.0+ and only works with HTTPS git URLs (not SSH).
 
 After updating the config, restart Claude Desktop. You can then use commands like:
+
 - "Play some upbeat dance music"
 - "Play https://youtube.com/watch?v=VIDEO_ID"
 - "Stop the music"
@@ -225,6 +203,7 @@ After updating the config, restart Claude Desktop. You can then use commands lik
 [Moly](https://github.com/moxin-org/moly) is an open source AI desktop client built in Rust. While MCP support is not currently documented, you can check their repository for updates on MCP integration:
 
 **Installation:**
+
 ```bash
 # Download from releases
 # Visit: https://github.com/moxin-org/moly/releases
@@ -242,6 +221,7 @@ cargo run --release
 The server works with any MCP-compatible client. Here's what the tools provide:
 
 **Play Music (YouTube URL or search query):**
+
 ```json
 {
   "tool": "play_music",
@@ -252,6 +232,7 @@ The server works with any MCP-compatible client. Here's what the tools provide:
 ```
 
 Or with a search query:
+
 ```json
 {
   "tool": "play_music",
@@ -262,6 +243,7 @@ Or with a search query:
 ```
 
 **Stop Music:**
+
 ```json
 {
   "tool": "stop_music",
