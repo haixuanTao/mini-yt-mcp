@@ -137,44 +137,65 @@ python -m mini_yt_mcp.server
 
 The server provides these tools for use with MCP-compatible clients:
 
-1. **search_youtube** - Search for YouTube videos by query terms
-2. **get_video_info** - Get detailed information about a YouTube video
-3. **download_audio** - Download audio from a YouTube video
-4. **analyze_audio** - Analyze audio file and generate dance sequence
-5. **generate_dance_from_youtube** - Complete workflow: download + analyze
-6. **load_dance_from_csv** - Load and analyze dance moves from CSV file
+1. **play_music** - Search for music on YouTube and play it (downloads, analyzes, and plays on robot if available)
+2. **stop_music** - Stop the currently playing music
+
+### Claude Desktop Configuration
+
+To use this MCP server with Claude Desktop, add the following to your Claude Desktop config file:
+
+**Location:** `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
+
+**Configuration:**
+```json
+{
+  "mcpServers": {
+    "mini-yt-mcp": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/haixuanTao/mini-yt-mcp",
+        "mini-yt-mcp-server"
+      ]
+    }
+  }
+}
+```
+
+After updating the config, restart Claude Desktop. You can then use commands like:
+- "Play some upbeat dance music"
+- "Play https://youtube.com/watch?v=VIDEO_ID"
+- "Stop the music"
 
 ### MCP Integration Example
 
 The server works with any MCP-compatible client. Here's what the tools provide:
 
-**Search and Download:**
+**Play Music (YouTube URL or search query):**
 ```json
 {
-  "tool": "search_youtube",
-  "arguments": {"query": "upbeat dance music 2024"}
-}
-```
-
-**Complete Workflow:**
-```json
-{
-  "tool": "generate_dance_from_youtube",
+  "tool": "play_music",
   "arguments": {
-    "input": "https://youtube.com/watch?v=...",
-    "export_csv": true
+    "input": "https://youtube.com/watch?v=VIDEO_ID"
   }
 }
 ```
 
-**CSV Analysis:**
+Or with a search query:
 ```json
 {
-  "tool": "load_dance_from_csv",
+  "tool": "play_music",
   "arguments": {
-    "csv_path": "/path/to/dance_moves.csv",
-    "scale": 0.5
+    "input": "upbeat dance music 2024"
   }
+}
+```
+
+**Stop Music:**
+```json
+{
+  "tool": "stop_music",
+  "arguments": {}
 }
 ```
 

@@ -387,19 +387,13 @@ class YouTubeMCPServer:
                     self._log(f"✅ Found cached query result: {cache_key}")
                     self._log(f"   Using CSV: {cached_csv}")
 
-                    # Get video info for display
-                    video_info = None
-                    if cached_url:
-                        video_info = self.downloader.get_video_info(cached_url)
-
                     # Format response
-                    response = "🎉 Music Playing (from cache)!\n\n"
-                    if video_info:
-                        response += f"**Video**: {video_info.get('title', 'Unknown')}\n"
-                        response += f"**Uploader**: {video_info.get('uploader', 'Unknown')}\n"
-                    response += f"**CSV**: {Path(cached_csv).name}\n"
-                    response += "\n🔊 **Audio playback starting in background**\n"
-                    response += "Use `stop_music` to stop playback.\n"
+                    response = "✅ Music playing"
+
+                    # Stop any currently playing music before starting new song
+                    if self.playback_task and not self.playback_task.done():
+                        self._log("🛑 Stopping currently playing music to play new song")
+                        await self._stop_music_internal()
 
                     # Clear stop event for new playback
                     self.stop_event.clear()
@@ -491,25 +485,12 @@ class YouTubeMCPServer:
                 self._log(f"💾 Saved query to cache: {cache_key}")
 
             # Format response
-            response = "🎉 Music Playing!\n\n"
+            response = "✅ Music playing"
 
-            if video_info:
-                response += f"**Video**: {video_info.get('title', 'Unknown')}\n"
-                response += f"**Uploader**: {video_info.get('uploader', 'Unknown')}\n"
-
-            if summary["duration"] > 0:
-                response += f"**Duration**: {summary['duration']:.2f} seconds\n"
-                response += f"**Tempo**: {summary['tempo']:.1f} BPM\n"
-            if summary["dance_moves_generated"] > 0:
-                response += (
-                    f"\n**Dance Moves Generated**: {summary['dance_moves_generated']}\n"
-                )
-
-            if csv_path:
-                response += f"**CSV Export**: {Path(csv_path).name}\n"
-
-            response += "\n🔊 **Audio playback starting in background**\n"
-            response += "Use `stop_music` to stop playback.\n"
+            # Stop any currently playing music before starting new song
+            if self.playback_task and not self.playback_task.done():
+                self._log("🛑 Stopping currently playing music to play new song")
+                await self._stop_music_internal()
 
             # Clear stop event for new playback
             self.stop_event.clear()
@@ -614,59 +595,62 @@ class YouTubeMCPServer:
             traceback.print_exc(file=sys.stderr)
             self.current_dance_move = None
 
+    async def _stop_music_internal(self):
+        """Internal method to stop music without returning TextContent."""
+        print("🛑 Stop music requested (internal)", file=sys.stderr)
+
+        # Set stop event to signal threads to stop
+        self.stop_event.set()
+        print("🛑 Stop event set", file=sys.stderr)
+
+        # Cancel robot movement if robot is active
+        if self.current_robot:
+            print("🛑 Cancelling robot movement...", file=sys.stderr)
+            try:
+                self.current_robot.cancel_move()
+                print("✅ Robot cancellation signal sent", file=sys.stderr)
+            except Exception as e:
+                import traceback
+                print(f"⚠️ Failed to cancel robot: {e}", file=sys.stderr)
+                traceback.print_exc(file=sys.stderr)
+
+        # Stop audio playback (this is quick)
+        if self.current_dance_move and self.current_dance_move.audio_player:
+            print("🛑 Stopping audio...", file=sys.stderr)
+            self.current_dance_move.stop_audio()
+
+        # Cancel the background playback task if running
+        if self.playback_task and not self.playback_task.done():
+            print("🛑 Cancelling playback task...", file=sys.stderr)
+            self.playback_task.cancel()
+            try:
+                await self.playback_task
+            except asyncio.CancelledError:
+                print("✅ Playback task cancelled", file=sys.stderr)
+
+        # Clear state
+        self.current_dance_move = None
+        self.playback_task = None
+        self.current_robot = None
+
     async def _stop_music(self) -> List[TextContent]:
         """Stop the currently playing music."""
         try:
-            print("🛑 Stop music requested", file=sys.stderr)
+            # Check if anything is playing
+            is_playing = (
+                self.playback_task and not self.playback_task.done()
+            ) or self.current_dance_move or self.current_robot
 
-            stopped_anything = False
-
-            # Set stop event to signal threads to stop
-            self.stop_event.set()
-            print("🛑 Stop event set", file=sys.stderr)
-
-            # Cancel robot movement if robot is active
-            if self.current_robot:
-                print("🛑 Cancelling robot movement...", file=sys.stderr)
-                try:
-                    self.current_robot.cancel_move()
-                    print("✅ Robot cancellation signal sent", file=sys.stderr)
-                    stopped_anything = True
-                except Exception as e:
-                    import traceback
-                    print(f"⚠️ Failed to cancel robot: {e}", file=sys.stderr)
-                    traceback.print_exc(file=sys.stderr)
-            else:
-                print("⚠️ No robot reference available to cancel", file=sys.stderr)
-
-            # Stop audio playback (this is quick)
-            if self.current_dance_move and self.current_dance_move.audio_player:
-                print("🛑 Stopping audio...", file=sys.stderr)
-                self.current_dance_move.stop_audio()
-                stopped_anything = True
-
-            # Cancel the background playback task if running
-            if self.playback_task and not self.playback_task.done():
-                print("🛑 Cancelling playback task...", file=sys.stderr)
-                self.playback_task.cancel()
-                try:
-                    await self.playback_task
-                except asyncio.CancelledError:
-                    print("✅ Playback task cancelled", file=sys.stderr)
-                stopped_anything = True
-
-            # Clear state
-            self.current_dance_move = None
-            self.playback_task = None
-            self.current_robot = None
-
-            if not stopped_anything:
+            if not is_playing:
                 return [
                     TextContent(
                         type="text",
                         text="ℹ️ No music is currently playing",
                     )
                 ]
+
+            # Stop the music
+            await self._stop_music_internal()
 
             return [
                 TextContent(
