@@ -29,13 +29,13 @@ This daemon must be running before playing dance moves on the robot.
 **From YouTube URL:**
 
 ```bash
-python -m mini_yt_mcp.main "https://www.youtube.com/watch?v=VIDEO_ID" --export-csv
+python -m mini_yt_mcp.main "https://www.youtube.com/watch?v=VIDEO_ID" --export-csv  --robot
 ```
 
 **From search terms:**
 
 ```bash
-python -m mini_yt_mcp.main "upbeat dance song" --export-csv
+python -m mini_yt_mcp.main "Celine Dion All by Myself" --export-csv  --robot
 ```
 
 **Play on robot from CSV:**
